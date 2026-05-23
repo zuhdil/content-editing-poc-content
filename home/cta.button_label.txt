@@ -1,1 +1,1 @@
-Learn more
+This button label is intentionally too long to pass validate
