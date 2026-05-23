@@ -1,0 +1,27 @@
+name: Validate and dispatch
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: validate-and-dispatch
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci || npm install
+      - name: Validate content files
+        run: npm run validate
+      - name: Dispatch sync to site repo
+        env:
+          GH_TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}
+        run: |
+          gh api repos/zuhdil/content-editing-poc-site/dispatches \
+            -X POST \
+            -f event_type=content-updated \
+            -F client_payload[commit]=${{ github.sha }}
